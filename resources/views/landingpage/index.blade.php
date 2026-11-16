@@ -40,7 +40,7 @@
 
                     <div class="countdown-wrapper mt-4" data-aos="fade-up" data-aos-delay="500">
                         <h5 class="countdown-title">Sisa Waktu Pencacahan Lapangan SE2026</h5>
-                        <div class="countdown d-flex justify-content-start" data-count="2026/09/01">
+                        <div class="countdown d-flex justify-content-start" data-count="2026/09/16">
                             <div>
                                 <h3 class="count-days"></h3>
                                 <h4>Hari</h4>
@@ -557,14 +557,254 @@
                                                 <h3>{{ $koseka['nama'] }}</h3>
                                                 <span>{{ $koseka['jabatan'] }}</span>
                                             </div>
-                                            <a href="{{ route('koseka.detail', $koseka['id']) }}"
-                                                class="btn btn-primary shadow-sm ms-auto"
-                                                style="background-color: #fd7e14; border: none; padding: 10px 25px; border-radius: 30px;">
-                                                <i class="bi bi-geo-alt-fill me-2"></i> Lihat Wilayah
-                                            </a>
+                                            <div class="action-buttons ms-auto d-flex gap-2">
+                                                <a href="{{ route('koseka.detail', $koseka['id']) }}"
+                                                    class="btn btn-primary shadow-sm"
+                                                    style="background-color: #fd7e14; border: none; padding: 10px 25px; border-radius: 30px;">
+                                                    <i class="bi bi-geo-alt-fill me-2"></i> Lihat Wilayah
+                                                </a>
+                                                <!-- Tombol Petugas yang memicu Modal Popup -->
+                                                <button type="button" class="btn btn-outline-primary shadow-sm"
+                                                    style="color: #fd7e14; border-color: #fd7e14; padding: 10px 25px; border-radius: 30px;"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalPetugas{{ $koseka['id'] }}">
+                                                    <i class="bi bi-people-fill me-2"></i> Petugas
+                                                </button>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal fade" id="modalPetugas{{ $koseka['id'] }}" tabindex="-1"
+                                        aria-labelledby="modalPetugasLabel{{ $koseka['id'] }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                            <div class="modal-content" style="border-radius: 15px;">
+                                                <div class="modal-header"
+                                                    style="background-color: #fd7e14; color: white; border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                                                    <h5 class="modal-title fw-bold"
+                                                        id="modalPetugasLabel{{ $koseka['id'] }}">
+                                                        <i class="bi bi-people-fill me-2"></i> Daftar Petugas —
+                                                        {{ $koseka['wilayah'] }}
+                                                    </h5>
+                                                    <button type="button" class="btn-close btn-close-white"
+                                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                @php
+                                                    $hpKoseka = $koseka['no_hp'] ?? '';
+                                                    $cleanHpKoseka = preg_replace('/[^0-9]/', '', $hpKoseka);
+                                                    $waKoseka = preg_replace('/^0/', '62', $cleanHpKoseka);
+                                                @endphp
+                                                <div class="modal-body p-4">
+                                                    <p class="text-muted mb-3">
+                                                        <strong>KOSEKA Penanggung Jawab:</strong> {{ $koseka['nama'] }}
+                                                        @if (!empty($hpKoseka))
+                                                            <span
+                                                                class="small text-muted me-1">({{ $hpKoseka }})</span>
+
+                                                            <!-- Tombol WA Direct App -->
+                                                            <a href="whatsapp://send?phone={{ $waKoseka }}&text=Halo%20{{ urlencode($koseka['nama']) }}"
+                                                                class="btn btn-sm btn-success rounded-circle"
+                                                                title="Chat via WhatsApp"
+                                                                style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+                                                                <i class="bi bi-whatsapp"></i>
+                                                            </a>
+
+                                                            <!-- Tombol Telepon Seluler -->
+                                                            <a href="tel:{{ $hpKoseka }}"
+                                                                class="btn btn-sm btn-outline-primary rounded-circle"
+                                                                title="Telepon Biasa"
+                                                                style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+                                                                <i class="bi bi-telephone-fill"></i>
+                                                            </a>
+                                                        @else
+                                                            <span class="text-muted small">Tidak ada kontak</span>
+                                                        @endif
+
+                                                    </p>
+
+
+                                                    @php
+                                                        $rawPetugas = $koseka['petugas'] ?? [];
+
+                                                        // Sorting data: Prioritaskan PML terlebih dahulu, kemudian PPL, lalu urutkan nama A-Z
+                                                        $daftarPetugas = collect($rawPetugas)
+                                                            ->sortBy(function ($item) {
+                                                                $jabatan = strtoupper($item['jabatan'] ?? '');
+                                                                $priority =
+                                                                    $jabatan === 'PML'
+                                                                        ? 1
+                                                                        : ($jabatan === 'PPL'
+                                                                            ? 2
+                                                                            : 3);
+                                                                return sprintf('%d_%s', $priority, $item['nama'] ?? '');
+                                                            })
+                                                            ->values()
+                                                            ->all();
+                                                    @endphp
+
+                                                    <!-- Input Search -->
+                                                    <div class="mb-3">
+                                                        <div class="input-group">
+                                                            <span
+                                                                class="input-group-text bg-light text-muted border-end-0">
+                                                                <i class="bi bi-search"></i>
+                                                            </span>
+                                                            <input type="text" id="searchPetugas{{ $koseka['id'] }}"
+                                                                class="form-control border-start-0 ps-0"
+                                                                placeholder="Cari nama atau jabatan petugas..."
+                                                                onkeyup="filterPetugas{{ $koseka['id'] }}()">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="table-responsive">
+                                                        <table id="tablePetugas{{ $koseka['id'] }}"
+                                                            class="table table-hover align-middle mb-0">
+                                                            <thead class="table-light">
+                                                                <tr>
+                                                                    <th style="width: 50px;">No</th>
+                                                                    <th>Nama Petugas</th>
+                                                                    <th>Jabatan / Peran</th>
+                                                                    <th class="text-end">Aksi / Kontak</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @forelse ($daftarPetugas as $index => $petugas)
+                                                                    @php
+                                                                        $nama = $petugas['nama'] ?? '-';
+                                                                        $noHp = $petugas['no_hp'] ?? '';
+                                                                        $cleanHp = preg_replace('/[^0-9]/', '', $noHp);
+                                                                        $waNumber = preg_replace(
+                                                                            '/^0/',
+                                                                            '62',
+                                                                            $cleanHp,
+                                                                        );
+                                                                    @endphp
+
+                                                                    <tr class="petugas-row">
+                                                                        <td>{{ $index + 1 }}</td>
+                                                                        <td class="fw-bold nama-petugas">
+                                                                            {{ $nama }}</td>
+                                                                        <td>
+                                                                            <span
+                                                                                class="badge jabatan-petugas {{ ($petugas['jabatan'] ?? '') === 'PML' ? 'bg-primary' : 'bg-info text-dark' }}">
+                                                                                {{ $petugas['jabatan'] ?? 'Petugas' }}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td class="text-end">
+                                                                            <div
+                                                                                class="d-flex align-items-center justify-content-end gap-2">
+                                                                                @if (!empty($noHp))
+                                                                                    <span
+                                                                                        class="small text-muted me-1">{{ $noHp }}</span>
+
+                                                                                    <a href="whatsapp://send?phone={{ $waNumber }}&text=Halo%20{{ urlencode($nama) }}"
+                                                                                        class="btn btn-sm btn-success rounded-circle"
+                                                                                        title="Chat via WhatsApp"
+                                                                                        style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+                                                                                        <i class="bi bi-whatsapp"></i>
+                                                                                    </a>
+
+                                                                                    <a href="tel:{{ $noHp }}"
+                                                                                        class="btn btn-sm btn-outline-primary rounded-circle"
+                                                                                        title="Telepon Biasa"
+                                                                                        style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+                                                                                        <i
+                                                                                            class="bi bi-telephone-fill"></i>
+                                                                                    </a>
+                                                                                @else
+                                                                                    <span class="text-muted small">Tidak
+                                                                                        ada kontak</span>
+                                                                                @endif
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                @empty
+                                                                    <tr>
+                                                                        <td colspan="4"
+                                                                            class="text-center text-muted py-3">
+                                                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                                                            Data petugas belum tersedia.
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforelse
+
+                                                                <!-- Pesan ketika hasil pencarian tidak ditemukan -->
+                                                                <tr id="noResults{{ $koseka['id'] }}"
+                                                                    style="display: none;">
+                                                                    <td colspan="4"
+                                                                        class="text-center text-muted py-3">
+                                                                        <i class="bi bi-search me-1"></i> Petugas tidak
+                                                                        ditemukan.
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary px-4"
+                                                        style="border-radius: 20px;"
+                                                        data-bs-dismiss="modal">Tutup</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
+                                    <!-- Script Filter Pencarian Real-Time -->
+                                    <script>
+                                        function filterPetugas{{ $koseka['id'] }}() {
+                                            const input = document.getElementById('searchPetugas{{ $koseka['id'] }}');
+                                            const filter = input.value.toLowerCase();
+                                            const table = document.getElementById('tablePetugas{{ $koseka['id'] }}');
+                                            const rows = table.getElementsByClassName('petugas-row');
+                                            const noResults = document.getElementById('noResults{{ $koseka['id'] }}');
+                                            let visibleCount = 0;
+
+                                            for (let i = 0; i < rows.length; i++) {
+                                                const nama = rows[i].querySelector('.nama-petugas').textContent.toLowerCase();
+                                                const jabatan = rows[i].querySelector('.jabatan-petugas').textContent.toLowerCase();
+
+                                                if (nama.includes(filter) || jabatan.includes(filter)) {
+                                                    rows[i].style.display = '';
+                                                    visibleCount++;
+                                                } else {
+                                                    rows[i].style.display = 'none';
+                                                }
+                                            }
+
+                                            if (noResults) {
+                                                noResults.style.display = visibleCount === 0 && rows.length > 0 ? '' : 'none';
+                                            }
+                                        }
+                                    </script>
+
+                                    <!-- Script Filter Pencarian Real-Time -->
+                                    <script>
+                                        function filterPetugas{{ $koseka['id'] }}() {
+                                            const input = document.getElementById('searchPetugas{{ $koseka['id'] }}');
+                                            const filter = input.value.toLowerCase();
+                                            const table = document.getElementById('tablePetugas{{ $koseka['id'] }}');
+                                            const rows = table.getElementsByClassName('petugas-row');
+                                            const noResults = document.getElementById('noResults{{ $koseka['id'] }}');
+                                            let visibleCount = 0;
+
+                                            for (let i = 0; i < rows.length; i++) {
+                                                const nama = rows[i].querySelector('.nama-petugas').textContent.toLowerCase();
+                                                const jabatan = rows[i].querySelector('.jabatan-petugas').textContent.toLowerCase();
+
+                                                if (nama.includes(filter) || jabatan.includes(filter)) {
+                                                    rows[i].style.display = '';
+                                                    visibleCount++;
+                                                } else {
+                                                    rows[i].style.display = 'none';
+                                                }
+                                            }
+
+                                            if (noResults) {
+                                                noResults.style.display = visibleCount === 0 && rows.length > 0 ? '' : 'none';
+                                            }
+                                        }
+                                    </script>
                                     <div class="col-lg-4 d-none d-lg-block">
                                         <div class="featured-img-wrapper">
                                             <img src="{{ asset('img/' . $koseka['foto_wil']) }}" class="featured-img"
@@ -635,6 +875,14 @@
                     }
                 }
             }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pindahkan semua elemen modal ke <body> agar tidak tertutup backdrop gelap
+            document.querySelectorAll('.modal').forEach(function(modalEl) {
+                document.body.appendChild(modalEl);
+            });
         });
     </script>
 @endsection

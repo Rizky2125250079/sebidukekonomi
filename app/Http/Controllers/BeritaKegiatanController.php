@@ -12,36 +12,53 @@ class BeritaKegiatanController extends Controller
     public function index()
     {
         $data = BeritaKegiatan::with(['user', 'jenisLaporan'])->latest()->get();
-        return view('berita.index', compact('data'));
+        return view('backend.berita.index', [
+            'data'  => $data,
+            'title' => "Berita Kegiatan",
+        ]);
+    }
+
+    public function create()
+    {
+        $jenisLaporan = JenisLaporan::all();
+        return view('backend.berita.create', [
+            'title' => "Tambah Berita Kegiatan",
+            'jenisLaporan' => $jenisLaporan
+        ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'judul' => 'required',
+            'judul' => 'required|string|max:255',
             'id_jenis_laporan' => 'required',
-            'gambar.*' => 'image|mimes:jpeg,png,jpg|max:2048', // Validasi tiap file foto
-            'link_pdf.*' => 'mimes:pdf|max:10000', // Validasi tiap file PDF
+            'tanggal' => 'required|date',
+            'tempat' => 'required',
+            'jumlah_peserta' => 'required|integer',
+            'gambar.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'link_pdf.*' => 'mimes:pdf|max:10000',
         ]);
 
-        $input = $request->all();
-        $input['user_id'] = auth()->id(); // Ambil ID user yang login
+        $input = $request->except(['gambar', 'link_pdf']); // Ambil input selain file dulu
+        $input['user_id'] = auth()->id();
 
-        // Handle Upload Banyak Gambar
+        // Upload Gambar
         if ($request->hasFile('gambar')) {
             $images = [];
             foreach ($request->file('gambar') as $file) {
-                $path = $file->store('berita/images', 'public');
+                $name = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('berita/images', $name, 'public');
                 $images[] = $path;
             }
-            $input['gambar'] = $images; // Tersimpan sebagai array di DB (karena casting)
+            $input['gambar'] = $images;
         }
 
-        // Handle Upload Banyak PDF
+        // Upload PDF
         if ($request->hasFile('link_pdf')) {
             $pdfs = [];
             foreach ($request->file('link_pdf') as $file) {
-                $path = $file->store('berita/documents', 'public');
+                $name = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('berita/documents', $name, 'public');
                 $pdfs[] = $path;
             }
             $input['link_pdf'] = $pdfs;
@@ -49,6 +66,6 @@ class BeritaKegiatanController extends Controller
 
         BeritaKegiatan::create($input);
 
-        return redirect()->back()->with('success', 'Laporan SE2026 berhasil dikirim!');
+        return redirect()->route('berita.index')->with('success', 'Berita berhasil disimpan!');
     }
 }

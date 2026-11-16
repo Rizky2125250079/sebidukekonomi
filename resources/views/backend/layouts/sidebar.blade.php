@@ -21,7 +21,7 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                 data-accordion="false">
                 <li class="nav-item">
-                    <a href="{{ url('backend') }}" class="nav-link {{ request()->is('backend*') ? 'active' : '' }}">
+                    <a href="{{ url('backend') }}" class="nav-link {{ request()->is('backend') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-tachometer-alt text-danger"></i>
                         <p>
                             Dashboard
@@ -30,9 +30,9 @@
                 </li>
                 @if (in_array(Auth::user()->role, ['admin', 'viewer']))
                     <li
-                        class="nav-item {{ request()->is(['persiapan*', 'DashboardGC*', 'CetakPeta*']) ? 'menu-open' : '' }}">
+                        class="nav-item {{ request()->is(['persiapan*', 'DashboardGC*', 'CetakPeta*', 'backend/berita*']) ? 'menu-open' : '' }}">
                         <a href="#"
-                            class="nav-link {{ request()->is(['persiapan*', 'DashboardGC*', 'CetakPeta*']) ? 'active' : '' }}">
+                            class="nav-link {{ request()->is(['persiapan*', 'DashboardGC*', 'CetakPeta*', 'backend/berita*']) ? 'active' : '' }}">
                             <i class="nav-icon fas fa-clipboard-list"></i>
                             <p>
                                 Persiapan
@@ -45,6 +45,13 @@
                                     class="nav-link {{ request()->is('DashboardGC*') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon text-info"></i>
                                     <p>Ground Check</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url('backend/berita') }}"
+                                    class="nav-link {{ request()->is('backend/berita*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon text-info"></i>
+                                    <p>Berita Kegiatan</p>
                                 </a>
                             </li>
                             @if (in_array(Auth::user()->role, ['admin']))

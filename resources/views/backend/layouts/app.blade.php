@@ -95,6 +95,15 @@
             })
         </script>
     @endif
+    @if ($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Terjadi Kesalahan:',
+                html: `{!! implode('<br>', $errors->all()) !!}`
+            });
+        </script>
+    @endif
     @stack('scripts')
 </body>
 

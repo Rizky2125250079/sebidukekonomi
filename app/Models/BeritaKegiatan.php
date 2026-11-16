@@ -11,6 +11,7 @@ class BeritaKegiatan extends Model
 
     protected $table = 'berita_kegiatan';
 
+
     protected $fillable = [
         'user_id',
         'id_jenis_laporan',
@@ -33,6 +34,10 @@ class BeritaKegiatan extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function jenisLaporan()
+    {
+        return $this->belongsTo(JenisLaporan::class, 'id_jenis_laporan');
     }
 
     // public function jenisLaporan()

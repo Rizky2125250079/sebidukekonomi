@@ -7,6 +7,7 @@ use App\Http\Controllers\KosekaController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\BeritaKegiatanController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +50,10 @@ Route::middleware(['auth', 'role'])->group(function () {
     // Route Berita (Misal: Hanya Admin dan Operator yang bisa kelola)
     Route::middleware(['role:admin,operator'])->group(function () {
         Route::resource('/backend/berita', BeritaKegiatanController::class);
+    });
+    // Route Kelola Pengguna (Misal: Hanya Admin dan Operator yang bisa kelola)
+    Route::middleware(['role:admin,operator'])->group(function () {
+        Route::resource('/backend/user', UserController::class);
     });
 
     // Helper untuk AJAX/Peta (Bisa semua role approve)
