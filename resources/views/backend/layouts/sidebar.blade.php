@@ -30,9 +30,9 @@
                 </li>
                 @if (in_array(Auth::user()->role, ['admin', 'viewer']))
                     <li
-                        class="nav-item {{ request()->is(['persiapan*', 'DashboardGC*', 'CetakPeta*', 'backend/berita*']) ? 'menu-open' : '' }}">
+                        class="nav-item {{ request()->is(['persiapan*', 'DashboardGC*', 'CetakPeta*', 'backend/berita*', 'backend/sebaranusaha*']) ? 'menu-open' : '' }}">
                         <a href="#"
-                            class="nav-link {{ request()->is(['persiapan*', 'DashboardGC*', 'CetakPeta*', 'backend/berita*']) ? 'active' : '' }}">
+                            class="nav-link {{ request()->is(['persiapan*', 'DashboardGC*', 'CetakPeta*', 'backend/berita*', 'backend/sebaranusaha*']) ? 'active' : '' }}">
                             <i class="nav-icon fas fa-clipboard-list"></i>
                             <p>
                                 Persiapan
@@ -54,6 +54,15 @@
                                     <p>Berita Kegiatan</p>
                                 </a>
                             </li>
+                            @if (in_array(Auth::user()->role, \App\Http\Controllers\SebaranUsahaController::ROLE_TITIK))
+                                <li class="nav-item">
+                                    <a href="{{ url('backend/sebaranusaha') }}"
+                                        class="nav-link {{ request()->is('backend/sebaranusaha*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon text-info"></i>
+                                        <p>Sebaran Usaha</p>
+                                    </a>
+                                </li>
+                            @endif
                             @if (in_array(Auth::user()->role, ['admin']))
                                 <li class="nav-item">
                                     <a href="{{ url('CetakPeta') }}"
@@ -69,7 +78,8 @@
                 @if (in_array(Auth::user()->role, ['admin']))
                     <li
                         class="nav-item {{ request()->is('MonitoringLapangan*') || request()->is('EarlyWarningSystem*') || request()->is('Anomali*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->is('pelaksanaan*') ? 'active' : '' }}">
+                        <a href="#"
+                            class="nav-link {{ request()->is(['MonitoringLapangan*', 'EarlyWarningSystem*', 'Anomali*']) ? 'active' : '' }}">
                             <i class="nav-icon fas fa-map-marked-alt"></i>
                             <p>
                                 Pelaksanaan Lapangan
@@ -77,21 +87,21 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item {{ request()->is('MonitoringLapangan*') ? 'menu-open' : '' }}"">
+                            <li class="nav-item {{ request()->is('MonitoringLapangan*') ? 'menu-open' : '' }}">
                                 <a href="{{ url('MonitoringLapangan') }}"
                                     class="nav-link  {{ request()->is('MonitoringLapangan*') ? 'active' : '' }} ">
                                     <i class="far fa-circle nav-icon text-warning"></i>
                                     <p>Monitoring Lapangan</p>
                                 </a>
                             </li>
-                            <li class="nav-item {{ request()->is('EarlyWarningSystem*') ? 'menu-open' : '' }}"">
+                            <li class="nav-item {{ request()->is('EarlyWarningSystem*') ? 'menu-open' : '' }}">
                                 <a href="{{ url('EarlyWarningSystem') }}"
                                     class="nav-link  {{ request()->is('EarlyWarningSystem*') ? 'active' : '' }} ">
                                     <i class="far fa-circle nav-icon text-warning"></i>
                                     <p>Early Warning System</p>
                                 </a>
                             </li>
-                            <li class="nav-item {{ request()->is('Anomali*') ? 'menu-open' : '' }}"">
+                            <li class="nav-item {{ request()->is('Anomali*') ? 'menu-open' : '' }}">
                                 <a href="{{ url('Anomali') }}"
                                     class="nav-link  {{ request()->is('Anomali*') ? 'active' : '' }} ">
                                     <i class="far fa-circle nav-icon text-warning"></i>

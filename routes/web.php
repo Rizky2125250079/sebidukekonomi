@@ -1,5 +1,6 @@
 <?php
-
+use App\Http\Controllers\SebaranUsahaController;
+use App\Http\Controllers\SebaranUsahaAdminController;
 use App\Http\Controllers\DashboardGroundCheck;
 use App\Http\Controllers\GroundCheckController;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +65,21 @@ Route::middleware(['auth', 'role'])->group(function () {
     });
 });
 
+// --- SEBARAN USAHA SE2026 ---
+// Tampilan guest (publik): halaman + statistik
+Route::prefix('SebaranUsaha')->name('sebaran.')->group(function () {
+    Route::get('/', [SebaranUsahaController::class, 'index'])->name('index');
+    Route::get('/data', [SebaranUsahaController::class, 'data'])->middleware('throttle:120,1')->name('data');
+});
+
+// Tampilan admin (backend): halaman + titik koordinat usaha (hanya role di SebaranUsahaController::ROLE_TITIK)
+Route::middleware(['auth', 'role:' . implode(',', SebaranUsahaController::ROLE_TITIK)])
+    ->prefix('backend/sebaranusaha')->name('sebaran.admin.')->group(function () {
+        Route::get('/', [SebaranUsahaAdminController::class, 'index'])->name('index');
+        Route::get('/titik', [SebaranUsahaAdminController::class, 'titik'])->name('titik');
+        Route::get('/titik/{id}', [SebaranUsahaAdminController::class, 'titikDetail'])->whereNumber('id')->name('titik.detail');
+    });
+
 Route::get('/', [LandingPageController::class, 'index']);
 Route::resource('/GroundCheck', GroundCheckController::class);
 Route::get('/updaterekap', [LandingPageController::class, 'updateRekap']);
@@ -73,3 +89,18 @@ Route::get('/koseka/{kdkec}', [KosekaController::class, 'showDetail'])->name('ko
 Route::view('/MonitoringLapangan', 'backend.monitoring');
 Route::view('/EarlyWarningSystem', 'backend.earlywarningsystem');
 Route::view('/Anomali', 'backend.anomali');
+
+
+if (app()->environment('local')) {
+    Route::get('/dev-login-admin', function (\Illuminate\Http\Request $request) {
+        abort_unless(in_array($request->ip(), ['127.0.0.1', '::1']), 404); 
+        $user = \App\Models\User::firstOrCreate(
+            ['email' => 'admin-lokal@example.test'],
+            ['name' => 'Admin Lokal', 'password' => bcrypt(\Illuminate\Support\Str::random(40))]
+        );
+        $user->forceFill(['role' => 'admin'])->save();
+        \Illuminate\Support\Facades\Auth::login($user);
+
+        return redirect('/backend');
+    });
+}
